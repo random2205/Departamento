@@ -7,20 +7,26 @@ const accessTokenJira = ' Basic aW50ZWdyYWNhb19qaXJhX2ludGVyY29vbUBlc3RhcGFyLmNv
 const ticketsFile = 'ticketsIntercomJira.json';
 const tickets = JSON.parse(fs.readFileSync(ticketsFile, 'utf8'));
 
-const campoDepartamento = 'customfield_12345'; // <-- Substitua pelo ID real do campo "Departamento"
+const campoDepartamento = 'customfield_10099';
 
 async function atualizarDepartamentoNoJira(ticket) {
   const jiraId = ticket.JIRA_ITSM;
 
-  // Verifica se o JIRA_ITSM está presente e válido
   if (!jiraId || jiraId === 'Não vinculado' || jiraId === 'N/A') {
     console.log(`⏭️ Pulado: ${ticket.IntercomID} - JIRA_ITSM inválido (${jiraId})`);
     return;
   }
 
+  const departamento = ticket.Departamento;
+
+  if (!departamento || departamento === 'Não informado' || departamento === 'N/A') {
+    console.log(`⏭️ Pulado: ${ticket.IntercomID} - Departamento não informado (${departamento})`);
+    return;
+  }
+
   const payload = {
     fields: {
-      [campoDepartamento]: ticket.Departamento
+      [campoDepartamento]: departamento
     }
   };
 
@@ -37,7 +43,7 @@ async function atualizarDepartamentoNoJira(ticket) {
       }
     );
 
-    console.log(`✅ Atualizado: ${jiraId} → Departamento: ${ticket.Departamento}`);
+    console.log(`✅ Atualizado: ${jiraId} → Departamento: ${departamento}`);
   } catch (error) {
     console.error(`❌ Erro ao atualizar ${jiraId}:`, error.response?.data || error.message);
   }
